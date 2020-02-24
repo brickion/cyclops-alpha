@@ -18,6 +18,9 @@ video_capture = cv2.VideoCapture(0)
 roy_image = face_recognition.load_image_file("legend.jpg")
 roy_face_encoding = face_recognition.face_encodings(roy_image)[0]
 print(roy_face_encoding)
+liv_image = face_recognition.load_image_file("livvi.jpg")
+liv_face_encoding = face_recognition.face_encodings(liv_image)[0]
+print(liv_face_encoding)
 # Load a second sample picture and learn how to recognize it.
 biden_image = face_recognition.load_image_file("biden.jpg")
 biden_face_encoding = face_recognition.face_encodings(biden_image)[0]
@@ -25,11 +28,13 @@ biden_face_encoding = face_recognition.face_encodings(biden_image)[0]
 # Create arrays of known face encodings and their names
 known_face_encodings = [
     roy_face_encoding,
-    biden_face_encoding
+    biden_face_encoding,
+    liv_face_encoding
 ]
 known_face_names = [
     "Roy Hui",
-    "Joe Biden"
+    "Joe Biden",
+    "Livvi"
 ]
 
 # Initialize some variables
