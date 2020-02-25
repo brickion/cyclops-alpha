@@ -1,3 +1,4 @@
 .DS_Store
 /faces/*.jpg
 /data/faces.json
+/__pycache__
