@@ -8,6 +8,9 @@ from datetime import datetime, timedelta
 NEW_EVENT_MINS = 5
 
 video_capture = cv2.VideoCapture(0)
+video_capture.set(cv2.CAP_PROP_FRAME_WIDTH, 400)
+video_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 300)
+
 names, faces = config.loadJson()
 print(str(len(names)) + ' items loaded')
 print('names loaded')
@@ -133,9 +136,9 @@ while True:
             face_labels.append(face_label)
             #print(face_label)
 
-    process_this_frame = not process_this_frame
+    #process_this_frame = not process_this_frame
 
-
+    font = cv2.FONT_HERSHEY_DUPLEX
     # Display the results
     for (top, right, bottom, left), face_label in zip(face_locations, face_labels):
         # Scale back up face locations since the frame we detected in was scaled to 1/4 size
@@ -145,14 +148,20 @@ while True:
         left *= 4
 
         # Draw a box around the face
-        cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
+        cv2.rectangle(frame, (left, top), (right, bottom), (255, 255, 255), 2)
 
         # Draw a label with a name below the face
-        cv2.rectangle(frame, (left, bottom - 35), (right, bottom), (0, 0, 255), cv2.FILLED)
-        font = cv2.FONT_HERSHEY_DUPLEX
-        cv2.putText(frame, face_label, (left + 6, bottom - 6), font, 0.8, (255, 255, 255), 1)
+        #cv2.rectangle(frame, (left, bottom - 35), (right, bottom), (255, 255, 255), cv2.FILLED)
 
-    # cv2.putText(frame, str(fps) + ' fps', (5, 22), font, 1.0, (255, 0, 0), 1)
+        #cv2.putText(frame, face_label, (left + 6, bottom - 6), font, 0.8, (255, 255, 255), 1)
+        face_image = frame[top:bottom, left:right]
+        
+        face_image = cv2.GaussianBlur(face_image, (99, 99), 30)
+
+        # Put the blurred face region back into the frame image
+        frame[top:bottom, left:right] = face_image
+
+    cv2.putText(frame, str(fps) + ' fps', (5, 22), font, 0.5, (0, 255, 0), 1)
     # Display the resulting image
     cv2.imshow('Video', frame)
 

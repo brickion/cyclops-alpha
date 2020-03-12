@@ -4,39 +4,24 @@ import numpy as np
 import config
 import time, math
 from datetime import datetime, timedelta
-import pickle
 
 NEW_EVENT_MINS = 5
 
-#######
-# record faces, store them, count activation times
-# 
-
 video_capture = cv2.VideoCapture(0)
-# names, faces = config.loadJson()
-# print(str(len(names)) + ' items loaded')
-# print('names loaded')
-# print(names)
-# print('faces loaded')
-# print(faces)
+video_capture.set(cv2.CAP_PROP_FRAME_WIDTH, 400)
+video_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 300)
 
-def save_known_faces():
-    with open("./data/faces.dat", "wb") as face_data_file:
-        face_data = [known_face_encodings, known_face_metadata]
-        pickle.dump(face_data, face_data_file)
-        print("Known faces backed up to disk.")
+names, faces = config.loadJson()
+print(str(len(names)) + ' items loaded')
+print('names loaded')
+print(names)
+print('faces loaded')
+print(faces)
 
-
-def load_known_faces():
-    global known_face_encodings, known_face_metadata
-
-    try:
-        with open("./data/faces.dat", "rb") as face_data_file:
-            known_face_encodings, known_face_metadata = pickle.load(face_data_file)
-            print("Known faces loaded from disk.")
-    except FileNotFoundError as e:
-        print("No previous face data found - starting with a blank known face list.")
-        pass
+# Create arrays of known face encodings and their names
+known_face_encodings = []
+known_face_names = []
+known_face_metadata = []
 
 def register_new_face(face_encoding, face_image):
     known_face_encodings.append(face_encoding)
@@ -78,13 +63,6 @@ face_locations = []
 face_encodings = []
 face_names = []
 process_this_frame = True
-# Create arrays of known face encodings and their names
-known_face_encodings = []
-known_face_names = []
-known_face_metadata = []
-number_of_faces_since_save = 0
-
-load_known_faces()
 
 fps = video_capture.get(cv2.CAP_PROP_FPS)
 fps_count = 0
@@ -156,6 +134,7 @@ while True:
                 register_new_face(face_encoding, face_image)
 
             face_labels.append(face_label)
+            #print(face_label)
 
     process_this_frame = not process_this_frame
 
@@ -169,46 +148,27 @@ while True:
         left *= 4
 
         # Draw a box around the face
-        cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
+        cv2.rectangle(frame, (left, top), (right, bottom), (255, 255, 255), 2)
 
         # Draw a label with a name below the face
-        cv2.rectangle(frame, (left, bottom - 35), (right, bottom), (0, 0, 255), cv2.FILLED)
+        #cv2.rectangle(frame, (left, bottom - 35), (right, bottom), (255, 255, 255), cv2.FILLED)
         font = cv2.FONT_HERSHEY_DUPLEX
-        cv2.putText(frame, face_label, (left + 6, bottom - 6), font, 0.8, (255, 255, 255), 1)
+        #cv2.putText(frame, face_label, (left + 6, bottom - 6), font, 0.8, (255, 255, 255), 1)
 
-    number_of_recent_visitors = 0
-    for metadata in known_face_metadata:
-        # If we have seen this person in the last minute, draw their image
-        if datetime.now() - metadata["last_seen"] < timedelta(seconds=10) and metadata["seen_frames"] > 5:
-            # Draw the known face image
-            x_position = number_of_recent_visitors * 150
-            frame[30:180, x_position:x_position + 150] = metadata["face_image"]
-            number_of_recent_visitors += 1
-
-            # Label the image with how many times they have visited
-            visits = metadata['seen_count']
-            visit_label = f"{visits} visits"
-            if visits == 1:
-                visit_label = "First visit"
-            cv2.putText(frame, visit_label, (x_position + 10, 170), cv2.FONT_HERSHEY_DUPLEX, 0.6, (255, 255, 255), 1)
-
-    if number_of_recent_visitors > 0:
-        cv2.putText(frame, "Visitors at Door", (5, 18), cv2.FONT_HERSHEY_DUPLEX, 0.8, (255, 255, 255), 1)
-
-    # cv2.putText(frame, str(fps) + ' fps', (5, 22), font, 1.0, (255, 0, 0), 1)
+    cv2.putText(frame, str(fps) + ' fps', (5, 22), font, 0.5, (0, 255, 0), 1)
     # Display the resulting image
     cv2.imshow('Video', frame)
 
     # Hit 'q' on the keyboard to quit!
     if cv2.waitKey(1) & 0xFF == ord('q'):
-        save_known_faces()
+        #save_known_faces()
         break
 
-    if len(face_locations) > 0 and number_of_faces_since_save > 100:
-        save_known_faces()
-        number_of_faces_since_save = 0
-    else:
-        number_of_faces_since_save += 1
+    # if len(face_locations) > 0 and number_of_faces_since_save > 100:
+    #     save_known_faces()
+    #     number_of_faces_since_save = 0
+    # else:
+    #     number_of_faces_since_save += 1
 
 # Release handle to the webcam
 video_capture.release()

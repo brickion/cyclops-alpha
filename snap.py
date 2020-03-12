@@ -5,33 +5,6 @@ from tkinter import simpledialog
 import face_recognition
 import config, time
 
-def start():
-    width, height = 800, 600
-    global cap
-    cap = cv2.VideoCapture(0)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-
-    root = tk.Toplevel()
-    root.bind('<Escape>', lambda e: root.quit())
-    global lmain
-    lmain = tk.Label(root)
-    lmain.pack()
-    global instruction_label
-    instruction_label = tk.Label(root, text='Click Capture to Take Photo')
-    instruction_label.pack()
-    capture_button = tk.Button(root, text='Capture', width=25, height=10, command=capture_photo)
-    capture_button.pack()
-
-    global person_name
-    person_name = simpledialog.askstring("Name", "Who is this person?", parent=root)
-
-    # global photo_counter
-    # photo_counter = 0
-
-    show_frame()
-    #root.mainloop()
-
 def show_frame():
     global frame
     _, frame = cap.read()
@@ -42,9 +15,12 @@ def show_frame():
     lmain.imgtk = imgtk
     lmain.configure(image=imgtk)
     lmain.after(10, show_frame)
+    #show_frame()
 
 def capture_photo():
-    #instruction_label['text']='Capturing Photo'
+    person_name = simpledialog.askstring("Name", "Who is this person?", parent=root)
+    global photo_counter
+    photo_counter += 1
     photo_name = './faces/' + person_name + '_' + str(int(time.time())) + '.jpg'
     cv2.imwrite(filename=photo_name, img=frame)
     # cap.release()
@@ -60,7 +36,22 @@ def capture_photo():
     instruction_label['text']='Photo Captured!\nPhoto Recognised!'
     new_face_encoding = face_recognition.face_encodings(new_face)[0]
     config.saveFace(person_name, new_face_encoding)
-    instruction_label['text']='Photo Captured!\nPhoto Recognised!\nFace Stored!'
-    return
+    instruction_label['text']=str(photo_counter) + ' Photo(s) Captured!\nPhoto Recognised!\nFace Stored!'
 
-# start()
+root = tk.Tk()
+root.bind('<Escape>', lambda e: root.quit())
+
+photo_counter = 0
+lmain = tk.Label(root)
+instruction_label = tk.Label(root, text='Click Capture to Take Photo')
+cap = cv2.VideoCapture(0)
+width, height = 800, 600
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+
+lmain.pack()
+instruction_label.pack()
+capture_button = tk.Button(root, text='Capture', width=25, height=10, command=capture_photo)
+capture_button.pack()
+show_frame()
+root.mainloop()
