@@ -2,4 +2,4 @@
 /faces/*.jpg
 /data/faces.json
 /data/faces.dat
-/__pycache__
+__pycache__
