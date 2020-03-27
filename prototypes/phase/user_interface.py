@@ -3,13 +3,9 @@ import constants
 
 # loop locations
 def draw_frames(frame, locations, magnification):
-    modes = []
-
     for location in locations:
-        mode = draw_frame(frame, location, magnification)
-        modes.append(mode)
-
-    return modes
+        draw_frame(frame, location, magnification)
+    return
 
 # draw rounded rectangles (like iphone), change to red frame if large enough
 def draw_frame(frame, location, magnification):
@@ -36,7 +32,22 @@ def draw_frame(frame, location, magnification):
     cv2.ellipse(frame, (right - corner_radius, top + corner_radius), (corner_radius, corner_radius), 270.0, 0, 90, line_color, line_thickness)
     cv2.ellipse(frame, (right - corner_radius, bottom - corner_radius), (corner_radius, corner_radius), 0.0, 0, 90, line_color, line_thickness)
     cv2.ellipse(frame, (left + corner_radius, bottom - corner_radius), (corner_radius, corner_radius), 90.0, 0, 90, line_color, line_thickness)
+    return
 
+def detect_largest(frame, locations, magnification):
+    modes = []
+    for location in locations:
+        mode = detect(frame, location, magnification)
+        modes.append(mode)
+    return modes
+
+def detect(frame, location, magnification):
+    top = location[0] * magnification
+    right = location[1] * magnification
+    bottom = location[2] * magnification
+    left = location[3] * magnification
+
+    mode = calculate_closeness(top, right, bottom, left, frame.shape[0], frame.shape[1])
     return mode
 
 # calculate how big an item is in comparison to the frame, if big enough, mode is important

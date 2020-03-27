@@ -32,6 +32,10 @@ def get_ir_source(display_width=640, display_height=480):
 def main_loop():
     magnification = 4
 
+    #load users
+
+    #user object: hash, face_encoding, last_seen
+
     if running_on_jetson_nano():
         video_capture = cv2.VideoCapture(get_jetson_gstreamer_source(), cv2.CAP_GSTREAMER)
         ir_capture = cv2.VideoCapture(get_ir_source(), cv2.CAP_GSTREAMER)
@@ -60,7 +64,7 @@ def main_loop():
         process_this_frame = not process_this_frame
 
         if len(face_locations) > 0:
-            modes = user_interface.draw_frames(frame, face_locations, magnification)
+            modes = user_interface.detect_largest(frame, face_locations, magnification)
         else:
             modes = []
 
@@ -69,16 +73,23 @@ def main_loop():
             if sent != True:
                 important_faces = [face_locations[modes.index(constants.IMPORTANT_MODE)]]
                 face_encodings = face_recognition.face_encodings(rgb_small_frame, important_faces)
+
+                # if not known
                 top, right, bottom, left = important_faces[0]
-                face_image = small_frame[top:bottom, left:right]
-                face_image = cv2.resize(face_image, (100, 100))
+                face_image = frame[top*magnification:bottom*magnification, left*magnification:right*magnification]
+                print(str(right-left) + ' ' + str(top-bottom))
+                face_image = cv2.resize(face_image, (380, 380))
+                cv2.imwrite('hello.jpg', face_image) # POST should add image & encoding, in async
                 face_hash = hash(str(face_encodings))
                 key = apis.create_asset(face_hash)
+                # if known
+                # API create event with hashed encoding
                 sent = True
 
 
             #detect_temp
 
+        user_interface.draw_frames(frame, face_locations, magnification)
 
         # temp detection
         #print(frame_ir[240][320])

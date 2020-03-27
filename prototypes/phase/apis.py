@@ -21,6 +21,12 @@ def create_event(id, event):
     print(response)
     return '123'
 
+def load_users(site_id):
+    api_path = ENDPOINT + '/assets'
+    response = requests.get(url = api_path)
+    print(response)
+    return '123'
+
 def log(action, item):
     print(str(datetime.datetime.now()))
     print(action + ' ' + item)
