@@ -3,6 +3,7 @@ import face_recognition
 import platform
 import numpy as np
 import apis, user_interface, constants, recognition
+import pickle
 # from uvctypes import *
 
 def running_on_jetson_nano():
@@ -79,9 +80,12 @@ def main_loop():
                 face_image = frame[top*magnification:bottom*magnification, left*magnification:right*magnification]
                 print(str(right-left) + ' ' + str(top-bottom))
                 face_image = cv2.resize(face_image, (380, 380))
-                cv2.imwrite('hello.jpg', face_image) # POST should add image & encoding, in async
+                # cv2.imwrite('hello.jpg', face_image) # POST should add image & encoding, in async
                 face_hash = hash(str(face_encodings))
-                key = apis.create_asset(face_hash)
+                # cv2 img to bytes=>with open(``)
+                face_bytes = cv2.imencode('.jpg',face_image)[1].tobytes()
+                key = apis.create_asset(face_hash,face_encodings,face_bytes)
+
                 # if known
                 # API create event with hashed encoding
                 sent = True

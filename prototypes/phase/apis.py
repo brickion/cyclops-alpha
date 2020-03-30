@@ -1,12 +1,14 @@
 import requests
 import datetime
 
-ENDPOINT = 'http://theia-federation-stage2.ap-southeast-1.elasticbeanstalk.com'
+# ENDPOINT = 'http://theia-federation-stage2.ap-southeast-1.elasticbeanstalk.com'
+ENDPOINT = 'http://localhost:3000'
 
-def create_asset(asset_info):
+def create_asset(asset_info,encoding,img,site='python_demo'):
     api_path = ENDPOINT + '/assets'
-    data = {'name':asset_info}
-    response_raw = requests.post(url = api_path, data=data)
+    data = {'name':asset_info,'hash':asset_info,'encoding': encoding,'site':site}
+    files={'file':img}
+    response_raw = requests.post(url = api_path, data=data,files=files)
     response = response_raw.json()
     log('POST', api_path)
     log('RESPONSE', response_raw.text)
