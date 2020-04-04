@@ -1,6 +1,29 @@
 import cv2
 import constants
 
+def draw_guide_frame(frame, temp):
+    line_color = (255, 255, 255)
+    line_thickness = 2
+    corner_radius = 10
+    size = 420
+    left = int(frame.shape[1] / 2 - size / 2)
+    bottom = int(frame.shape[1] / 2 - size / 2 + 200)
+    top = bottom - size
+    right = left + size
+
+    cv2.line(frame, (left+corner_radius, top), (right-corner_radius, top), line_color, line_thickness)
+    cv2.line(frame, (right, top+corner_radius), (right, bottom-corner_radius), line_color, line_thickness)
+    cv2.line(frame, (right-corner_radius, bottom), (left+corner_radius, bottom), line_color, line_thickness)
+    cv2.line(frame, (left, bottom-corner_radius), (left, top+corner_radius), line_color, line_thickness)
+
+    cv2.ellipse(frame, (left + corner_radius, top + corner_radius), (corner_radius, corner_radius), 180.0, 0, 90, line_color, line_thickness)
+    cv2.ellipse(frame, (right - corner_radius, top + corner_radius), (corner_radius, corner_radius), 270.0, 0, 90, line_color, line_thickness)
+    cv2.ellipse(frame, (right - corner_radius, bottom - corner_radius), (corner_radius, corner_radius), 0.0, 0, 90, line_color, line_thickness)
+    cv2.ellipse(frame, (left + corner_radius, bottom - corner_radius), (corner_radius, corner_radius), 90.0, 0, 90, line_color, line_thickness)
+
+    cv2.putText(frame, temp, (int(frame.shape[1] / 2)-20, top-10), cv2.FONT_HERSHEY_DUPLEX, 0.8, (255, 255, 255), 1)
+    return
+
 # loop locations
 def draw_frames(frame, locations, magnification):
     for location in locations:

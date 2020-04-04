@@ -4,7 +4,12 @@ import platform
 import numpy as np
 import apis, user_interface, constants, recognition
 import pickle
-# from uvctypes import *
+from tinkerforge.ip_connection import IPConnection
+from tinkerforge.bricklet_temperature_ir_v2 import BrickletTemperatureIRV2
+HOST = "localhost"
+PORT = 4223
+UID = "Lr8"
+OFFSET = 15.8
 
 def running_on_jetson_nano():
     return platform.machine() == "aarch64"
@@ -52,17 +57,26 @@ def main_loop():
     modes = []
 
     sent = False
+    ipcon = IPConnection()
+    tir = BrickletTemperatureIRV2(UID, ipcon)
+    ipcon.connect(HOST, PORT)
+    frame_count = 1
+    object_temperature = tir.get_object_temperature()/10.0
 
     while True:
         ret, frame = video_capture.read()
         #ret_ir, frame_ir = ir_capture.read()
-        if process_this_frame: # process every other frame to save CPU
+        if frame_count %2 == 0: # process every other frame to save CPU
             # face detection
             small_frame = cv2.resize(frame, (0, 0), fx=1/magnification, fy=1/magnification)
             rgb_small_frame = small_frame[:, :, ::-1]
             face_locations = face_recognition.face_locations(rgb_small_frame)
 
-        process_this_frame = not process_this_frame
+        if frame_count %3 == 0:
+            object_temperature = tir.get_object_temperature()/10.0 + OFFSET
+
+        # process_this_frame = not process_this_frame
+        frame_count = frame_count + 1
 
         if len(face_locations) > 0:
             modes = user_interface.detect_largest(frame, face_locations, magnification)
@@ -84,7 +98,7 @@ def main_loop():
                 face_hash = hash(str(face_encodings))
                 # cv2 img to bytes=>with open(``)
                 face_bytes = cv2.imencode('.jpg',face_image)[1].tobytes()
-                key = apis.create_asset(face_hash,face_encodings,face_bytes)
+                #key = apis.create_asset(face_hash,face_encodings,face_bytes)
 
                 # if known
                 # API create event with hashed encoding
@@ -93,6 +107,7 @@ def main_loop():
 
             #detect_temp
 
+        user_interface.draw_guide_frame(frame, str(object_temperature))
         user_interface.draw_frames(frame, face_locations, magnification)
 
         # temp detection
