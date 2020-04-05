@@ -1,17 +1,18 @@
 import requests
 import datetime
 
-# ENDPOINT = 'http://theia-federation-stage2.ap-southeast-1.elasticbeanstalk.com'
-ENDPOINT = 'http://localhost:3000'
+ENDPOINT = 'https://health-federation.pellar.io'
+# ENDPOINT = 'http://localhost:3000'
 
-def create_asset(asset_info,encoding,img,site='python_demo'):
+def create_asset(asset_info,encoding,img,site='eb5d84ca610ea3b5355fa8bb'):
     api_path = ENDPOINT + '/assets'
-    data = {'name':asset_info,'hash':asset_info,'encoding': encoding,'site':site}
+    data = {'name':asset_info, 'hash':asset_info, 'encoding': encoding, 'site':site}
     files={'file':img}
     response_raw = requests.post(url = api_path, data=data,files=files)
-    response = response_raw.json()
-    log('POST', api_path)
     log('RESPONSE', response_raw.text)
+    log('POST', api_path)
+    response = response_raw.json()
+
     if response['result'] == 'SUCCESS':
         return response['key']
     else:

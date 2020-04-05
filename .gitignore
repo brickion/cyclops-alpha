@@ -3,3 +3,4 @@
 /data/faces.json
 /data/faces.dat
 __pycache__
+known_faces.dat

@@ -4,12 +4,13 @@ import platform
 import numpy as np
 import apis, user_interface, constants, recognition
 import pickle
+import time, math
 from tinkerforge.ip_connection import IPConnection
 from tinkerforge.bricklet_temperature_ir_v2 import BrickletTemperatureIRV2
 HOST = "localhost"
 PORT = 4223
 UID = "Lr8"
-OFFSET = 15.8
+OFFSET = 15.5
 
 def running_on_jetson_nano():
     return platform.machine() == "aarch64"
@@ -60,11 +61,37 @@ def main_loop():
     ipcon = IPConnection()
     tir = BrickletTemperatureIRV2(UID, ipcon)
     ipcon.connect(HOST, PORT)
+
     frame_count = 1
-    object_temperature = tir.get_object_temperature()/10.0
+
+    object_temperature = 0
+    brick_enabled = True
+
+    try:
+        object_temperature = tir.get_object_temperature()/10.0
+    except:
+        brick_enabled = False
+
+
+    # default frame per second
+    fps = video_capture.get(cv2.CAP_PROP_FPS)
+    fps_count = 0
+    second = math.floor(time.time())
 
     while True:
+        # calculate frames per second
+        fps_count += 1
+        if second != math.floor(time.time()):
+            fps = fps_count
+            fps_count = 0
+            second = math.floor(time.time())
+
         ret, frame = video_capture.read()
+
+        #flipping for mirroring
+        frame = cv2.flip(frame, 1)
+        frame = frame[0:720, 280:1000]
+
         #ret_ir, frame_ir = ir_capture.read()
         if frame_count %2 == 0: # process every other frame to save CPU
             # face detection
@@ -72,8 +99,9 @@ def main_loop():
             rgb_small_frame = small_frame[:, :, ::-1]
             face_locations = face_recognition.face_locations(rgb_small_frame)
 
-        if frame_count %3 == 0:
-            object_temperature = tir.get_object_temperature()/10.0 + OFFSET
+        # detect every 3rd frame, and if it is connected
+        if frame_count %3 == 0 and brick_enabled == True:
+            object_temperature = round(tir.get_object_temperature()/10.0 + OFFSET,1)
 
         # process_this_frame = not process_this_frame
         frame_count = frame_count + 1
@@ -92,22 +120,18 @@ def main_loop():
                 # if not known
                 top, right, bottom, left = important_faces[0]
                 face_image = frame[top*magnification:bottom*magnification, left*magnification:right*magnification]
-                print(str(right-left) + ' ' + str(top-bottom))
-                face_image = cv2.resize(face_image, (380, 380))
-                # cv2.imwrite('hello.jpg', face_image) # POST should add image & encoding, in async
+                face_image = cv2.resize(face_image, (350, 360))
+                #cv2.imwrite('hello.jpg', face_image) # POST should add image & encoding, in async
                 face_hash = hash(str(face_encodings))
                 # cv2 img to bytes=>with open(``)
-                face_bytes = cv2.imencode('.jpg',face_image)[1].tobytes()
-                #key = apis.create_asset(face_hash,face_encodings,face_bytes)
+                #face_bytes = cv2.imencode('.jpg',face_image)[1].tobytes()
+                #key = apis.create_asset(face_hash, face_encodings, face_bytes)
 
                 # if known
                 # API create event with hashed encoding
                 sent = True
 
-
-            #detect_temp
-
-        user_interface.draw_guide_frame(frame, str(object_temperature))
+        user_interface.draw_guide_frame(frame, str(object_temperature), brick_enabled and constants.IMPORTANT_MODE in modes, fps)
         user_interface.draw_frames(frame, face_locations, magnification)
 
         # temp detection
