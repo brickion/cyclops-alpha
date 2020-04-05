@@ -6,6 +6,7 @@ CORNER_RADIUS = 10
 PERCENTAGE_MIN_THRESHOLD = 22
 PERCENTAGE_MAX_THRESHOLD = 40
 FRAME_SIZE = 420
+TEMP_THRESHOLD = 37
 
 def draw_guide_frame(frame, temp, brick_enabled, fps):
     line_color = (255, 255, 255)
@@ -27,7 +28,14 @@ def draw_guide_frame(frame, temp, brick_enabled, fps):
 
     # temp
     if brick_enabled == True:
-        cv2.putText(frame, temp + 'C', (int(frame.shape[1] / 2)-20, top-10), FONT, 0.8, (255, 255, 255), 1)
+        temp_color = (0,255,0)
+
+        # if temp is high, show red box & change text to red
+        if temp > TEMP_THRESHOLD:
+            frame = cv2.rectangle(frame, (5,5), (frame.shape[1]-5, frame.shape[0]-5), (0, 0, 255), 10)
+            temp_color = (0,0,255)
+
+        cv2.putText(frame, str(temp) + 'C', (int(frame.shape[1] / 2)-20, top-10), FONT, 0.8, temp_color, 1)
 
     # frames per second
     cv2.putText(frame, str(fps) + 'fps', (frame.shape[1]-50, 20), FONT, 0.5, (255, 255, 255), 1)

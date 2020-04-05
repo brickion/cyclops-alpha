@@ -131,7 +131,7 @@ def main_loop():
                 # API create event with hashed encoding
                 sent = True
 
-        user_interface.draw_guide_frame(frame, str(object_temperature), brick_enabled and constants.IMPORTANT_MODE in modes, fps)
+        user_interface.draw_guide_frame(frame, object_temperature, brick_enabled and constants.IMPORTANT_MODE in modes, fps)
         user_interface.draw_frames(frame, face_locations, magnification)
 
         # temp detection
