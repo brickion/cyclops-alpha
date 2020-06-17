@@ -36,7 +36,7 @@ def get_ir_source(display_width=640, display_height=480):
             )
 
 
-def main_loop():
+async def run(conf, connected, session):
     magnification = 4
 
     #load users
@@ -58,19 +58,19 @@ def main_loop():
     modes = []
 
     sent = False
-    ipcon = IPConnection()
-    tir = BrickletTemperatureIRV2(UID, ipcon)
-    ipcon.connect(HOST, PORT)
+    # ipcon = IPConnection()
+    # tir = BrickletTemperatureIRV2(UID, ipcon)
+    # ipcon.connect(HOST, PORT)
 
     frame_count = 1
 
     object_temperature = 0
     brick_enabled = True
 
-    try:
-        object_temperature = tir.get_object_temperature()/10.0
-    except:
-        brick_enabled = False
+    # try:
+    #     object_temperature = tir.get_object_temperature()/10.0
+    # except:
+    #     brick_enabled = False
 
 
     # default frame per second
@@ -101,7 +101,8 @@ def main_loop():
 
         # detect every 3rd frame, and if it is connected
         if frame_count %3 == 0 and brick_enabled == True:
-            object_temperature = round(tir.get_object_temperature()/10.0 + OFFSET,1)
+            object_temperature=36.6
+            # object_temperature = round(tir.get_object_temperature()/10.0 + OFFSET,1)
 
         # process_this_frame = not process_this_frame
         frame_count = frame_count + 1
@@ -121,11 +122,11 @@ def main_loop():
                 top, right, bottom, left = important_faces[0]
                 face_image = frame[top*magnification:bottom*magnification, left*magnification:right*magnification]
                 face_image = cv2.resize(face_image, (350, 360))
-                #cv2.imwrite('hello.jpg', face_image) # POST should add image & encoding, in async
+                cv2.imwrite('hello.jpg', face_image) # POST should add image & encoding, in async
                 face_hash = hash(str(face_encodings))
                 # cv2 img to bytes=>with open(``)
-                #face_bytes = cv2.imencode('.jpg',face_image)[1].tobytes()
-                #key = apis.create_asset(face_hash, face_encodings, face_bytes)
+                face_bytes = cv2.imencode('.jpg',face_image)[1].tobytes()
+                key = await apis.create_asset(session, conf['api_base_url'] ,face_hash, face_encodings, face_bytes)
 
                 # if known
                 # API create event with hashed encoding
@@ -149,5 +150,5 @@ def main_loop():
     video_capture.release()
     cv2.destroyAllWindows()
 
-if __name__ == "__main__":
-    main_loop()
+# if __name__ == "__main__":
+#     run()
