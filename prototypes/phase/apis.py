@@ -1,10 +1,10 @@
 import requests
 import datetime
 
-ENDPOINT = 'https://health-federation.pellar.io'
-# ENDPOINT = 'http://localhost:3000'
+# ENDPOINT = 'https://health-federation.pellar.io'
+ENDPOINT = 'http://localhost:3000'
 
-def create_asset(asset_info,encoding,img,site='eb5d84ca610ea3b5355fa8bb'):
+def create_asset(asset_info,encoding,img,site='0c77477f9822d9353099cbb2'):
     api_path = ENDPOINT + '/assets'
     data = {'name':asset_info, 'hash':asset_info, 'encoding': encoding, 'site':site}
     files={'file':img}

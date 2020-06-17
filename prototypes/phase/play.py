@@ -10,7 +10,7 @@ from tinkerforge.bricklet_temperature_ir_v2 import BrickletTemperatureIRV2
 HOST = "localhost"
 PORT = 4223
 UID = "Lr8"
-OFFSET = 15.5
+OFFSET = 14.5
 
 def running_on_jetson_nano():
     return platform.machine() == "aarch64"
@@ -50,7 +50,7 @@ def main_loop():
         video_capture = cv2.VideoCapture(0)
         #ir_capture = cv2.VideoCapture(1)
 
-    # cv2.namedWindow('cams', cv2.WINDOW_NORMAL)
+    cv2.namedWindow('Pellar Health', cv2.WINDOW_NORMAL)
     # cv2.resizeWindow('cams', 1280, 480)
 
     process_this_frame = True
